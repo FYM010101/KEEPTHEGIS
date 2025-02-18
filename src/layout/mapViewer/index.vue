@@ -2,41 +2,33 @@
 import { onMounted } from 'vue';
 import * as Cesium from 'cesium';
 //@ts-ignore
+import * as VueCesium from '@/libs/cesium'
+//@ts-ignore
 import useMapStore from '@/store/modules/mapStore';
+//@ts-ignore
+import { useWallPrimitive } from '@/libs/cesium/hooks/useWallPrimitive';
+//@ts-ignore
+import type { WallParams } from '@/libs/cesium/types';
 
+
+const { viewer } = VueCesium.useCesiumViewer("cesiumContainer");
 const mapStore = useMapStore();
+const cesiumLayers = VueCesium.useCesiumLayers();
 
-let viewer: Cesium.Viewer;
 let camera: Cesium.Camera;
+let scene: Cesium.Scene;
 let geoJsonDataSource: Cesium.GeoJsonDataSource;
 const highlightedFeature = { feature: null as Cesium.Entity | null };
 
 let defaultFillColor = new Cesium.Color(0, 0.4, 0.5, 0.6);
 let selectedColor = new Cesium.Color(1, 1, 0, 0.5);
-function initCesium() {
-    viewer = new Cesium.Viewer('cesiumContainer', {
-        timeline: false, // 不显示时间线
-        animation: false, // 不显示动画控制
-        geocoder: false, // 不显示搜索按钮编码器
-        homeButton: false, // 显示初视角按钮
-        sceneModePicker: false, // 显示投影方式选择器
-        baseLayerPicker: false, // 显示基础图层选择器
-        navigationHelpButton: false, // 不显示帮助按钮
-        fullscreenButton: false, // 显示全屏按钮
-        infoBox: false, // 信息框
-        selectionIndicator: false   // 绿色的定位框
-        // terrain: Cesium.Terrain.fromWorldTerrain(),
-    });
-    camera = viewer.camera;
+async function initCesium() {
+    camera = viewer.value.camera;
+    scene = viewer.value.scene;
     // viewer.scene.globe.depthTestAgainstTerrain = true;
-    
-    if (!mapStore.viewer) {
-        mapStore.initializeViewer(viewer);
-    }
-    mapStore.setView(mapStore.locations['/home']);
 
-    const tdtImageLayer = new Cesium.WebMapTileServiceImageryProvider({
-        url: 'http://t0.tianditu.gov.cn/img_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=img&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={TileMatrix}&TILEROW={TileRow}&TILECOL={TileCol}&tk=22405d420b3bd1d7c7fdde8fb168c4c7',
+    //接入天地图wmts服务
+    cesiumLayers.addLayer('http://t0.tianditu.gov.cn/img_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=img&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={TileMatrix}&TILEROW={TileRow}&TILECOL={TileCol}&tk=22405d420b3bd1d7c7fdde8fb168c4c7', {
         subdomains: ['0', '1', '2', '3', '4', '5', '6', '7'],
         layer: 'tdtImgLayer',
         style: 'default',
@@ -44,11 +36,34 @@ function initCesium() {
         tileMatrixSetID: 'GoogleMapsCompatible',
         maximumLevel: 19,
     });
-    viewer.imageryLayers.addImageryProvider(tdtImageLayer);
 
     //添加数据
+    //添加官网点云数据
+    const tileset = await Cesium.Cesium3DTileset.fromIonAssetId(43978);
+    scene.primitives.add(tileset);
     //中国geojson数据
     loadGeoJson();
+
+    //primitive添加墙，着色器实现电子围栏效果
+    // 定义墙体参数
+    const wallParams: WallParams = {
+        positions: [
+            107.0, 41.0, 100000.0,
+            97.0, 41.0, 100000.0,
+            97.0, 38.0, 100000.0,
+            107.0, 38.0, 100000.0,
+            107.0, 41.0, 100000.0,
+        ],
+        materialOptions: {
+            color: new Cesium.Color(1.0, 0.0, 0.0, 1.0), // 红色
+            rate: 2,
+            repeatNum: 5,
+        },
+    };
+
+    // 创建墙体 Primitive
+    const wallPrimitive = useWallPrimitive(wallParams);
+    scene.primitives.add(wallPrimitive);
     // const redBox = {
     //     id: 'redBox',
     //     name: "红色方盒子",
@@ -101,7 +116,7 @@ function initCesium() {
     // });
     // const shaderSource = `
     //     uniform vec4 color;
-        
+
     //     czm_material czm_getMaterial(czm_materialInput materialInput)
     //     {
     //         vec4 outColor = color;
@@ -132,60 +147,7 @@ function initCesium() {
     // })
     // viewer.scene.primitives.add(boxPrimitive);
 
-    //primitive添加墙，着色器实现电子围栏效果
-    let wallInstance = new Cesium.GeometryInstance({
-        geometry: new Cesium.WallGeometry({
-            positions: Cesium.Cartesian3.fromDegreesArrayHeights([
-                107.0, 41.0, 100000.0,
-                97.0, 41.0, 100000.0,
-                97.0, 38.0, 100000.0,
-                107.0, 38.0, 100000.0,
-                107.0, 41.0, 100000.0
-            ])
-        })
-    });
-    const wallShaderSource = `
-        float pointy (float f) {
-            return 0.01 / (abs(f) + 0.02);
-        }
-        czm_material czm_getMaterial(czm_materialInput materialInput)
-        {
-            czm_material material = czm_getDefaultMaterial(materialInput);
-            vec2 str = materialInput.st * 1.0;
-            float iTime = czm_frameNumber / 100.0;
 
-            vec2 uv = str;
-            uv.y = fract(uv.y * repeatNum);
-            vec3 col001 = vec3(0.0);
-            float f001 = fract(abs(uv.y - (iTime * 0.5 * rate)));
-            col001 = vec3(pointy(f001));
-
-            vec3 col= color.rgb;//颜色2
-            material.diffuse = col * pow((1.0 - str.y), 4.0) + col001;
-            material.emission = col + col001;
-            material.alpha = (1.0 - str.y);
-            return material;
-        }
-    `
-    const wallMaterial = new Cesium.Material({
-        translucent: true,
-        fabric: {
-            type: 'custom',
-            uniforms: {
-                color: new Cesium.Color(0.23, 0.67, 0.9, 1.0),
-                rate: 1,
-                repeatNum: 5
-            },
-            source: wallShaderSource
-        }
-    })
-    let wallPrimitive = new Cesium.Primitive({
-        geometryInstances: wallInstance,
-        appearance: new Cesium.MaterialAppearance({
-            material: wallMaterial,
-        }),
-    })
-    viewer.scene.primitives.add(wallPrimitive);
 
     // //primitive添加矩形
     // let rectangleInstance = new Cesium.GeometryInstance({
@@ -209,7 +171,7 @@ const loadGeoJson = async () => {
         strokeWidth: 10,
         // clampToGround: true,
     });
-    viewer.dataSources.add(geoJsonDataSource);
+    viewer.value.dataSources.add(geoJsonDataSource);
 
     // 设置鼠标事件
     setupMouseEvents();
@@ -217,11 +179,11 @@ const loadGeoJson = async () => {
 
 // 设置鼠标事件
 const setupMouseEvents = () => {
-    const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+    const handler = new Cesium.ScreenSpaceEventHandler(scene.canvas);
 
     // 鼠标移动事件
-    handler.setInputAction((movement:any) => {
-        const pickedObject = viewer.scene.pick(movement.position);
+    handler.setInputAction((movement: any) => {
+        const pickedObject = scene.pick(movement.position);
 
         // 如果拾取到的是 GeoJSON 中的实体
         if (Cesium.defined(pickedObject) && pickedObject.id instanceof Cesium.Entity) {
@@ -248,7 +210,7 @@ const setupMouseEvents = () => {
     }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
     handler.setInputAction((movement: any) => {
-        const cartesian = viewer.scene.pickPosition(movement.endPosition);
+        const cartesian = scene.pickPosition(movement.endPosition);
         if (cartesian) {
             const cartographic = Cesium.Ellipsoid.WGS84.cartesianToCartographic(cartesian);
             const longitude = Cesium.Math.toDegrees(cartographic.longitude).toFixed(6);
