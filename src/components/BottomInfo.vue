@@ -13,13 +13,14 @@ defineProps(['mapInfo']);
 <style scoped>
 .info-panel {
     /* text-align: right; */
-    position: absolute;
+    /* position: absolute; */
     /* bottom: 10px; */
-    right: 10px;
+    /* right: 10px; */
     background: rgba(0, 0, 0, 0.6);
     color: white;
     padding: 3px;
     border-radius: 5px;
     font-size: 12px;
+    margin-right: 20px;
 }
 </style>

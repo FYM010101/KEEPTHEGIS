@@ -23,7 +23,7 @@ export default {
     display: flex;
     align-items: center;
     padding: 10px;
-    background: $base-menu-background;
+    // background: $base-menu-background;
 
     img {
         width: 40px;

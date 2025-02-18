@@ -3,7 +3,7 @@ import { defineStore } from 'pinia';
 import * as Cesium from 'cesium';
 //@ts-ignore
 import { constantRoute } from '@/router/routes'
-import { markRaw } from 'vue';
+// import { markRaw } from 'vue';
 
 // 定义视角选项类型
 interface ViewOptions {
@@ -78,7 +78,7 @@ const useMapStore = defineStore('mapStore', {
         console.warn('Viewer 已初始化');
         return;
       }
-      this.viewer = markRaw(viewerInstance);
+      this.viewer = viewerInstance;
     },
 
     // 切换视角

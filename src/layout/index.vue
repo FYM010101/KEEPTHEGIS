@@ -9,15 +9,23 @@ import LeftInfo from './leftInfo/index.vue'
 import FoldButton from '@/components/FoldButton.vue'
 import BottomInfo from '@/components/BottomInfo.vue'
 // import Compass from '@/components/Compass.vue'
-//右侧内容展示区域
+// 引入地图组件
 import MapViewer from './mapViewer/index.vue';
+//引入封装后的按钮组件
+import CommonButton from '../components/CommonButton.vue'
+//引入比例尺组件
+import CesiumScale from '../libs/cesium/components/CesiumScale.vue'
+//获取配置仓库
 import useMenuSettingStore from '../store/modules/menuSetting';
 import useLayOutSettingStore from '../store/modules/layoutSetting';
 import useMapStore from '../store/modules/mapStore'
 let menuSettingStore = useMenuSettingStore();
-//获取layout配置仓库
 let LayOutSettingStore = useLayOutSettingStore();
 let mapStore = useMapStore();
+
+const handleSubmit = () => {
+    console.log('按钮被点击了');
+}
 
 //获取路由对象
 // let $route = useRoute();
@@ -26,14 +34,24 @@ let mapStore = useMapStore();
 <template>
     <div class="layout_container">
         <!-- 顶部菜单 -->
-        <div class="layout_slider">
-            <Logo></Logo>
-            <!-- 展示菜单 -->
-            <el-menu :default-active="menuSettingStore.menuList[0].name" background-color="#00152999" mode="horizontal"
-                active-text-color="#80fdff" text-color="white">
-                <!--根据路由动态生成菜单-->
-                <Menu :menuList="menuSettingStore.menuList"></Menu>
-            </el-menu>
+        <div class="layout_toolbar">
+            <div class="left_menu">
+                <Logo></Logo>
+                <!-- 展示菜单 -->
+                <el-menu :default-active="menuSettingStore.menuList[0].name" background-color="#00152999"
+                    mode="horizontal" active-text-color="#80fdff" text-color="white">
+                    <!--根据路由动态生成菜单-->
+                    <Menu :menuList="menuSettingStore.menuList"></Menu>
+                </el-menu>
+            </div>
+            <!-- 右侧工具栏 -->
+            <div class="right_btn">
+                <div class="tool_btn">
+                    <CommonButton type="text" :icon="'Location'" @click="handleSubmit" />
+                    <CommonButton type="text" :icon="'FullScreen'" @click="handleSubmit" />
+                    <CommonButton type="text" :icon="'Upload'" @click="handleSubmit" />
+                </div>
+            </div>
         </div>
         <!-- 地图展示区域 -->
         <div class="layout_viewer">
@@ -52,16 +70,10 @@ let mapStore = useMapStore();
         <div class="layout_flodButton" :class="{ fold: LayOutSettingStore.fold ? true : false }">
             <FoldButton />
         </div>
-        <!-- <div class="layout_rightInfo">
-
-        </div> -->
         <div class="layout_bottomInfo" :class="{ fold: LayOutSettingStore.fold ? true : false }">
             <BottomInfo :mapInfo="mapStore.mapInfo"></BottomInfo>
+            <CesiumScale />
         </div>
-        <!-- <div class="layout_compass">
-            <Compass />
-        </div> -->
-
     </div>
 </template>
 
@@ -70,18 +82,34 @@ let mapStore = useMapStore();
     width: 100%;
     height: 100vh;
 
-    .layout_slider {
+    .layout_toolbar {
         display: flex;
+        justify-content: space-between;
+        // align-items: center; /* 垂直居中 */
         position: fixed;
         width: 100%;
         height: $base-menu-height;
         top: 0px;
         z-index: 1000;
+        background: $base-menu-background;
 
-        .el-menu {
-            width: 100%;
-            height: 100%;
-            border: none;
+        .left_menu {
+            display: flex;
+            .el-menu {
+                width: 500px;
+                height: 100%;
+                border: none;
+            }
+        }
+
+        .right_btn {
+            display: flex;
+            width:200px;
+            justify-content:center;
+            align-items: center;
+            // .tool_btn {
+            //     padding-right: 25px;
+            // }
         }
     }
 
@@ -144,12 +172,14 @@ let mapStore = useMapStore();
 
     .layout_bottomInfo {
         position: fixed;
-        width: calc(100vw - $info-width);
+        width: calc(100vw - $info-width - 20px);
         height: 20px;
         left: $info-width;
         bottom: 0px;
         // background-color: $bottom-background;
         z-index: 1000;
+        display: flex;
+        justify-content: flex-end;
         transition: all 0.3s;
 
         &.fold {
