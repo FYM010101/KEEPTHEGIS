@@ -3,11 +3,11 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import useMapStore from '@/store/modules/mapStore';
 const mapStore = useMapStore();
 onMounted(() => {
-    mapStore.loadGeoJson();
+    mapStore.loadEffectsData();
 })
-
 onUnmounted(() => {
-    mapStore.removeGeoJson('/data/geojson/china.geojson');
+    mapStore.removeTileset('/data/tileset.json');
+    mapStore.removeWallEffect('mainWall');
 })
 </script>
 <template>
