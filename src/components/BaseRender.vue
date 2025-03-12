@@ -25,7 +25,6 @@
 <script setup lang="ts">
 import { reactive } from 'vue';
 import * as Cesium from 'cesium';
-//@ts-ignore
 import useMapStore from '@/store/modules/mapStore';
 
 const mapStore = useMapStore();

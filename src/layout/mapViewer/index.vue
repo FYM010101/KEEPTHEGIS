@@ -1,33 +1,34 @@
 <script setup lang="ts">
 import { onMounted } from 'vue';
 import * as Cesium from 'cesium';
-//@ts-ignore
 import * as VueCesium from '@/libs/cesium'
-//@ts-ignore
 import useMapStore from '@/store/modules/mapStore';
-//@ts-ignore
-import { useWallPrimitive } from '@/libs/cesium/hooks/useWallPrimitive';
-//@ts-ignore
-import type { WallParams } from '@/libs/cesium/types';
 
+import EChartsPanel from '@/components/EChartsPanel.vue';
+import regionDataService, { regionState } from '@/services/regionDataService';
 
 const { viewer } = VueCesium.useCesiumViewer("cesiumContainer");
-const mapStore = useMapStore();
 const cesiumLayers = VueCesium.useCesiumLayers();
+const mapStore = useMapStore();
 
 let camera: Cesium.Camera;
 let scene: Cesium.Scene;
-let geoJsonDataSource: Cesium.GeoJsonDataSource;
 const highlightedFeature = { feature: null as Cesium.Entity | null };
 
 let defaultFillColor = new Cesium.Color(0, 0.4, 0.5, 0.6);
 let selectedColor = new Cesium.Color(1, 1, 0, 0.5);
 async function initCesium() {
-    camera = viewer.value.camera;
-    scene = viewer.value.scene;
-    // viewer.scene.globe.depthTestAgainstTerrain = true;
-
+    // 确保viewer.value不为空后再获取camera
+    if (viewer.value) {
+        camera = viewer.value.camera;
+        scene = viewer.value.scene;
+    } else {
+        console.error('viewer.value为空，无法获取camera对象');
+        return;
+    }
+    // viewer.value!.scene.globe.depthTestAgainstTerrain = true; //（开启）
     //接入天地图wmts服务
+
     cesiumLayers.addLayer('http://t0.tianditu.gov.cn/img_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=img&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={TileMatrix}&TILEROW={TileRow}&TILECOL={TileCol}&tk=22405d420b3bd1d7c7fdde8fb168c4c7', {
         subdomains: ['0', '1', '2', '3', '4', '5', '6', '7'],
         layer: 'tdtImgLayer',
@@ -36,34 +37,25 @@ async function initCesium() {
         tileMatrixSetID: 'GoogleMapsCompatible',
         maximumLevel: 19,
     });
+    // 设置鼠标事件
+    setupMouseEvents();
+    mapStore.createWaterEffect(
+        Cesium.Rectangle.fromDegrees(120.0, 30.0, 122.0, 32.0),
+        {
+            baseColor: Cesium.Color.fromCssColorString('#1a5cff'),
+            rippleColor: Cesium.Color.WHITE.withAlpha(0.6),
+            speed: 1.5,
+            reflectivity: 0.9
+        }
+    );
 
     //添加数据
     //添加官网点云数据
-    const tileset = await Cesium.Cesium3DTileset.fromIonAssetId(43978);
-    scene.primitives.add(tileset);
+    // const tileset = await Cesium.Cesium3DTileset.fromIonAssetId(43978);
+    // scene.primitives.add(tileset);
     //中国geojson数据
-    loadGeoJson();
+    // loadGeoJson();
 
-    //primitive添加墙，着色器实现电子围栏效果
-    // 定义墙体参数
-    const wallParams: WallParams = {
-        positions: [
-            107.0, 41.0, 100000.0,
-            97.0, 41.0, 100000.0,
-            97.0, 38.0, 100000.0,
-            107.0, 38.0, 100000.0,
-            107.0, 41.0, 100000.0,
-        ],
-        materialOptions: {
-            color: new Cesium.Color(1.0, 0.0, 0.0, 1.0), // 红色
-            rate: 2,
-            repeatNum: 5,
-        },
-    };
-
-    // 创建墙体 Primitive
-    const wallPrimitive = useWallPrimitive(wallParams);
-    scene.primitives.add(wallPrimitive);
     // const redBox = {
     //     id: 'redBox',
     //     name: "红色方盒子",
@@ -163,51 +155,37 @@ async function initCesium() {
     //     appearance: rectangleAppearance
     // }))
 }
-// 加载 GeoJSON 数据
-const loadGeoJson = async () => {
-    geoJsonDataSource = await Cesium.GeoJsonDataSource.load('/data/geojson/china.geojson', {
-        stroke: Cesium.Color.WHITE, // 边框颜色
-        fill: defaultFillColor, // 默认填充颜色
-        strokeWidth: 10,
-        // clampToGround: true,
-    });
-    viewer.value.dataSources.add(geoJsonDataSource);
-
-    // 设置鼠标事件
-    setupMouseEvents();
-};
-
 // 设置鼠标事件
 const setupMouseEvents = () => {
     const handler = new Cesium.ScreenSpaceEventHandler(scene.canvas);
 
     // 鼠标移动事件
-    handler.setInputAction((movement: any) => {
-        const pickedObject = scene.pick(movement.position);
+    // handler.setInputAction((movement: any) => {
+    //     const pickedObject = scene.pick(movement.position);
 
-        // 如果拾取到的是 GeoJSON 中的实体
-        if (Cesium.defined(pickedObject) && pickedObject.id instanceof Cesium.Entity) {
-            const entity = pickedObject.id;
+    //     // 如果拾取到的是 GeoJSON 中的实体
+    //     if (Cesium.defined(pickedObject) && pickedObject.id instanceof Cesium.Entity) {
+    //         const entity = pickedObject.id;
 
-            // 如果当前高亮的不是同一个省份
-            if (highlightedFeature.feature !== entity) {
-                // 恢复之前的高亮省份样式
-                if (highlightedFeature.feature) {
-                    resetHighlight(highlightedFeature.feature);
-                }
+    //         // 如果当前高亮的不是同一个省份
+    //         if (highlightedFeature.feature !== entity) {
+    //             // 恢复之前的高亮省份样式
+    //             if (highlightedFeature.feature) {
+    //                 resetHighlight(highlightedFeature.feature);
+    //             }
 
-                // 高亮当前省份
-                highlightedFeature.feature = entity;
-                highlightFeature(entity);
-            }
-        } else {
-            // 如果没有拾取到任何实体，恢复高亮省份的样式
-            if (highlightedFeature.feature) {
-                resetHighlight(highlightedFeature.feature);
-                highlightedFeature.feature = null;
-            }
-        }
-    }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+    //             // 高亮当前省份
+    //             highlightedFeature.feature = entity;
+    //             highlightFeature(entity);
+    //         }
+    //     } else {
+    //         // 如果没有拾取到任何实体，恢复高亮省份的样式
+    //         if (highlightedFeature.feature) {
+    //             resetHighlight(highlightedFeature.feature);
+    //             highlightedFeature.feature = null;
+    //         }
+    //     }
+    // }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
     handler.setInputAction((movement: any) => {
         const cartesian = scene.pickPosition(movement.endPosition);
@@ -220,17 +198,17 @@ const setupMouseEvents = () => {
     }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
 
     // 相机参数监听
-    camera.changed.addEventListener(() => {
-        const cartographic = Cesium.Cartographic.fromCartesian(camera.position);
-        const longitude = Cesium.Math.toDegrees(cartographic.longitude).toFixed(6);
-        const latitude = Cesium.Math.toDegrees(cartographic.latitude).toFixed(6);
-        const height = cartographic.height.toFixed(2);
-        const heading = Cesium.Math.toDegrees(camera.heading).toFixed(2);
-        const pitch = Cesium.Math.toDegrees(camera.pitch).toFixed(2);
-        const roll = Cesium.Math.toDegrees(camera.roll).toFixed(2);
+    // camera.changed.addEventListener(() => {
+    //     const cartographic = Cesium.Cartographic.fromCartesian(camera.position);
+    //     const longitude = Cesium.Math.toDegrees(cartographic.longitude).toFixed(6);
+    //     const latitude = Cesium.Math.toDegrees(cartographic.latitude).toFixed(6);
+    //     const height = cartographic.height.toFixed(2);
+    //     const heading = Cesium.Math.toDegrees(camera.heading).toFixed(2);
+    //     const pitch = Cesium.Math.toDegrees(camera.pitch).toFixed(2);
+    //     const roll = Cesium.Math.toDegrees(camera.roll).toFixed(2);
 
-        mapStore.updateCameraParams(longitude, latitude, height, heading, pitch, roll); // 更新相机参数
-    });
+    //     mapStore.updateCameraParams(longitude, latitude, height, heading, pitch, roll); // 更新相机参数
+    // });
 };
 
 // 高亮省份
@@ -254,6 +232,9 @@ onMounted(() => {
 
 <template>
     <div id="cesiumContainer"></div>
+    <EChartsPanel v-model:visible="regionState.showChart" :title="regionState.currentRegion?.name || '区域统计'"
+        :regionName="regionState.currentRegion?.name || ''" :chartData="regionState.currentRegion || {}"
+        @close="regionDataService.closeChart()" />
 </template>
 
 <style scoped lang="scss">

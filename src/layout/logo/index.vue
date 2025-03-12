@@ -33,6 +33,10 @@ export default {
     p {
         font-size: $base-logo-title-fontSize;
         margin-left: 10px;
+        color: #00ffff;
+        font-weight: bold;
+        letter-spacing: 2px;
+        text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
     }
 }
 </style>
