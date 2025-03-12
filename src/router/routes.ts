@@ -28,14 +28,16 @@ export const constantRoute = [
                 meta: {
                     title: '首页',
                     hidden: false,
+                    active: true
                 },
             },
             {
-                path: '/baseRender',
-                component: () => import('@/components/BaseRender.vue'),
+                path: '/mapEffects',
+                component: () => import('@/components/EffectsScene.vue'),
                 meta: {
-                    title: '基础渲染',
+                    title: '特效场景',
                     hidden: false,
+                    active: false
                 },
             },
         ],

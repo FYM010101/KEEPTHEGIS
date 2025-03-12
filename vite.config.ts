@@ -10,6 +10,10 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src')
     },
   },
+  server: {
+    port: 8080, // 设置开发服务器端口
+    open: true, // 自动打开浏览器
+  },
   //scss全局变量配置
   css: {
     preprocessorOptions: {

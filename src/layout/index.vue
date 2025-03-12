@@ -1,13 +1,16 @@
 <script setup lang="ts">
+import { ref, onMounted, onUnmounted } from 'vue';
+import { useRouter } from 'vue-router';
 //获取路由对象
 // import { useRoute } from 'vue-router'
 //引入左侧菜单logo子组件
 import Logo from './logo/index.vue'
 //引入菜单组件
-import Menu from './menu/index.vue'
+// import Menu from './menu/index.vue'
+import NavigationBar from '@/components/NavigationBar.vue'
 import LeftInfo from './leftInfo/index.vue'
 import FoldButton from '@/components/FoldButton.vue'
-import BottomInfo from '@/components/BottomInfo.vue'
+import CameraInfo from '@/libs/cesium/components/CameraInfo.vue'
 // import Compass from '@/components/Compass.vue'
 // 引入地图组件
 import MapViewer from './mapViewer/index.vue';
@@ -22,6 +25,31 @@ import useMapStore from '../store/modules/mapStore'
 let menuSettingStore = useMenuSettingStore();
 let LayOutSettingStore = useLayOutSettingStore();
 let mapStore = useMapStore();
+const { locations } = mapStore;
+
+//获取路由器对象
+let $router = useRouter();
+
+// 切换导航项
+const switchNavItem = (path: string) => {
+    //路由跳转
+    $router.push(path);
+    const location = locations[path];
+    if (location) {
+        mapStore.setView(location);
+    }
+    menuSettingStore.menuList.forEach((item, i) => {
+        if(item.children) {
+            item.children.forEach((navItem, j) => {
+                if(navItem.path === path) {
+                    navItem.meta.active = true;
+                } else {
+                    navItem.meta.active = false;
+                }
+            });
+        }
+    });
+};
 
 const handleSubmit = () => {
     console.log('按钮被点击了');
@@ -38,20 +66,21 @@ const handleSubmit = () => {
             <div class="left_menu">
                 <Logo></Logo>
                 <!-- 展示菜单 -->
-                <el-menu :default-active="menuSettingStore.menuList[0].name" background-color="#00152999"
-                    mode="horizontal" active-text-color="#80fdff" text-color="white">
-                    <!--根据路由动态生成菜单-->
-                    <Menu :menuList="menuSettingStore.menuList"></Menu>
-                </el-menu>
+                <!--<el-menu :default-active="menuSettingStore.menuList[0].name" background-color="#00152999"
+                    mode="horizontal" active-text-color="#80fdff" text-color="white">-->
+                <!--根据路由动态生成菜单-->
+                <!--<Menu :menuList="menuSettingStore.menuList"></Menu>
+                </el-menu> -->
+                <NavigationBar :menuList="menuSettingStore.menuList" @switch="switchNavItem" />
             </div>
             <!-- 右侧工具栏 -->
-            <div class="right_btn">
+            <!-- <div class="right_btn">
                 <div class="tool_btn">
                     <CommonButton type="text" :icon="'Location'" @click="handleSubmit" />
                     <CommonButton type="text" :icon="'FullScreen'" @click="handleSubmit" />
                     <CommonButton type="text" :icon="'Upload'" @click="handleSubmit" />
                 </div>
-            </div>
+            </div> -->
         </div>
         <!-- 地图展示区域 -->
         <div class="layout_viewer">
@@ -64,14 +93,14 @@ const handleSubmit = () => {
             </div>
         </div>
 
-        <div class="layout_leftInfo" :class="{ fold: LayOutSettingStore.fold ? true : false }">
+        <!-- <div class="layout_leftInfo" :class="{ fold: LayOutSettingStore.fold ? true : false }">
             <LeftInfo />
-        </div>
-        <div class="layout_flodButton" :class="{ fold: LayOutSettingStore.fold ? true : false }">
+        </div> -->
+        <!-- <div class="layout_flodButton" :class="{ fold: LayOutSettingStore.fold ? true : false }">
             <FoldButton />
-        </div>
+        </div> -->
         <div class="layout_bottomInfo" :class="{ fold: LayOutSettingStore.fold ? true : false }">
-            <BottomInfo :mapInfo="mapStore.mapInfo"></BottomInfo>
+            <CameraInfo :mapInfo="mapStore.mapInfo"></CameraInfo>
             <CesiumScale />
         </div>
     </div>
@@ -95,6 +124,7 @@ const handleSubmit = () => {
 
         .left_menu {
             display: flex;
+
             .el-menu {
                 width: 500px;
                 height: 100%;
@@ -104,8 +134,8 @@ const handleSubmit = () => {
 
         .right_btn {
             display: flex;
-            width:200px;
-            justify-content:center;
+            width: 200px;
+            justify-content: center;
             align-items: center;
             // .tool_btn {
             //     padding-right: 25px;
