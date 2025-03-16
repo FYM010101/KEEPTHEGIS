@@ -1,0 +1,53 @@
+/* 移动端优先设计 */
+@media screen and (max-width: 768px) {
+  .cesium-container {
+    width: 100vw;
+    height: 100vh;
+    touch-action: pan-y;
+  }
+  
+  /* 隐藏大屏专用元素 */
+  .large-screen-only {
+    display: none !important;
+  }
+}
+
+/* PC端适配 */
+@media screen and (min-width: 769px) and (max-width: 1279px) {
+  .cesium-container {
+    width: 80vw;
+    height: 90vh;
+    margin: 2vh auto;
+  }
+}
+
+/* 大屏适配 */
+@media screen and (min-width: 1280px) {
+  .cesium-container {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+  }
+  
+  /* 大屏专用缩放控制器 */
+  .scale-controls {
+    position: fixed;
+    right: 2vw;
+    bottom: 5vh;
+    z-index: 999;
+  }
+}
+
+/* 基础弹性布局 */
+.layout-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* 地图容器响应式 */
+.map-wrapper {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}

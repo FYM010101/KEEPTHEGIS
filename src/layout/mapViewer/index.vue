@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
+
 import * as Cesium from 'cesium';
 import * as VueCesium from '@/libs/cesium'
 import useMapStore from '@/store/modules/mapStore';
-
-import EChartsPanel from '@/components/EChartsPanel.vue';
-import regionDataService, { regionState } from '@/services/regionDataService';
 
 const { viewer } = VueCesium.useCesiumViewer("cesiumContainer");
 const cesiumLayers = VueCesium.useCesiumLayers();
@@ -13,10 +11,7 @@ const mapStore = useMapStore();
 
 let camera: Cesium.Camera;
 let scene: Cesium.Scene;
-const highlightedFeature = { feature: null as Cesium.Entity | null };
 
-let defaultFillColor = new Cesium.Color(0, 0.4, 0.5, 0.6);
-let selectedColor = new Cesium.Color(1, 1, 0, 0.5);
 async function initCesium() {
     // 确保viewer.value不为空后再获取camera
     if (viewer.value) {
@@ -29,32 +24,44 @@ async function initCesium() {
     // viewer.value!.scene.globe.depthTestAgainstTerrain = true; //（开启）
     //接入天地图wmts服务
 
-    cesiumLayers.addLayer('http://t0.tianditu.gov.cn/img_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=img&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={TileMatrix}&TILEROW={TileRow}&TILECOL={TileCol}&tk=22405d420b3bd1d7c7fdde8fb168c4c7', {
-        subdomains: ['0', '1', '2', '3', '4', '5', '6', '7'],
-        layer: 'tdtImgLayer',
-        style: 'default',
-        format: 'image/jpeg',
-        tileMatrixSetID: 'GoogleMapsCompatible',
-        maximumLevel: 19,
-    });
+    // cesiumLayers.addLayer('http://t0.tianditu.gov.cn/img_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=img&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={TileMatrix}&TILEROW={TileRow}&TILECOL={TileCol}&tk=22405d420b3bd1d7c7fdde8fb168c4c7', {
+    //     subdomains: ['0', '1', '2', '3', '4', '5', '6', '7'],
+    //     layer: 'tdtImgLayer',
+    //     style: 'default',
+    //     format: 'image/jpeg',
+    //     tileMatrixSetID: 'GoogleMapsCompatible',
+    //     maximumLevel: 19,
+    // });
+    // var options = {
+    //   crs: "WGS84", // 使用84坐标系，默认为：GCJ02
+    //   style: 4,
+    // };
+    viewer.value.imageryLayers.add(
+        new Cesium.ImageryLayer(new Cesium.MapboxStyleImageryProvider({
+            // styleId: 'navigation-night-v1',
+            styleId: 'dark-v11',
+            accessToken: 'pk.eyJ1IjoiZnltMDEwMTAxIiwiYSI6ImNtODl1N2Y0ZTB5dHEybHM3Znd3eTE5aGkifQ.5NxU9Pacc8vNg5Qh2_O2vQ'
+        }))
+    );
     // 设置鼠标事件
     setupMouseEvents();
-    mapStore.createWaterEffect(
-        Cesium.Rectangle.fromDegrees(120.0, 30.0, 122.0, 32.0),
-        {
-            baseColor: Cesium.Color.fromCssColorString('#1a5cff'),
-            rippleColor: Cesium.Color.WHITE.withAlpha(0.6),
-            speed: 1.5,
-            reflectivity: 0.9
-        }
-    );
+
+    // mapStore.createWaterEffect(
+    //     Cesium.Rectangle.fromDegrees(120.0, 30.0, 122.0, 32.0),
+    //     {
+    //         baseColor: Cesium.Color.fromCssColorString('#1a5cff'),
+    //         rippleColor: Cesium.Color.WHITE.withAlpha(0.6),
+    //         speed: 1.5,
+    //         reflectivity: 0.9
+    //     }
+    // );
 
     //添加数据
     //添加官网点云数据
     // const tileset = await Cesium.Cesium3DTileset.fromIonAssetId(43978);
     // scene.primitives.add(tileset);
     //中国geojson数据
-    // loadGeoJson();
+    // mapStore.loadGeoJson();
 
     // const redBox = {
     //     id: 'redBox',
@@ -211,19 +218,7 @@ const setupMouseEvents = () => {
     // });
 };
 
-// 高亮省份
-const highlightFeature = (entity: Cesium.Entity) => {
-    if (entity.polygon) {
-        entity.polygon.material = new Cesium.ColorMaterialProperty(selectedColor); // 设置高亮颜色
-    }
-};
 
-// 恢复省份的默认样式
-const resetHighlight = (entity: Cesium.Entity) => {
-    if (entity.polygon) {
-        entity.polygon.material = new Cesium.ColorMaterialProperty(defaultFillColor); // 恢复默认颜色
-    }
-};
 onMounted(() => {
     initCesium();
 })
@@ -232,9 +227,7 @@ onMounted(() => {
 
 <template>
     <div id="cesiumContainer"></div>
-    <EChartsPanel v-model:visible="regionState.showChart" :title="regionState.currentRegion?.name || '区域统计'"
-        :regionName="regionState.currentRegion?.name || ''" :chartData="regionState.currentRegion || {}"
-        @close="regionDataService.closeChart()" />
+
 </template>
 
 <style scoped lang="scss">
