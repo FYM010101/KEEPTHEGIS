@@ -1,0 +1,96 @@
+.bx-popup-ctn {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  z-index: 1000;
+  pointer-events: auto;
+  padding: 5px;
+  .bx-popup-close {
+    position: absolute;
+    right: 0px;
+    top: 0px;
+    cursor: pointer;
+    z-index: 10;
+    color: #00e5ff;
+    font-size: 16px;
+    background: rgba(0, 90, 130, 0.7);
+    border: 1px solid rgba(0, 191, 255, 0.4);
+    border-radius: 4px;
+    padding: 2px 4px;
+    transition: all 0.3s;
+    
+    &:hover {
+      background: rgba(0, 120, 170, 0.8);
+      box-shadow: 0 0 8px rgba(0, 229, 255, 0.3);
+      transform: scale(1.05);
+    }
+  }
+  
+  .divpoint-wrap {
+    position: relative;
+    padding: 5px;
+  }
+  
+  .divpoint-border {
+    border: 1px solid rgba(0, 191, 255, 0.3);
+    background-color: rgba(4, 25, 37, 0.85);
+    border-radius: 6px;
+    padding: 8px;
+    box-shadow: 0 0 15px rgba(0, 191, 255, 0.4);
+    backdrop-filter: blur(5px);
+    transition: all 0.3s ease;
+  }
+  
+  .divpoint-center {
+    position: relative;
+  }
+  
+  .bx-popup-header-ctn {
+    font-weight: bold;
+    font-size: 14px;
+    margin-bottom: 8px;
+    padding-right: 30px;
+    background: linear-gradient(45deg, #00e5ff, #00b3ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 0 0 8px rgba(0, 229, 255, 0.5);
+  }
+  
+  .bx-popup-content-ctn {
+    color: #8fd4d4;
+    font-size: 12px;
+    max-width: 300px;
+    max-height: 200px;
+    padding: 5px;
+    line-height: 1.5;
+    overflow: visible;
+  }
+  
+  .directional {
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 10px solid rgba(0, 191, 255, 0.3);
+    filter: drop-shadow(0 2px 3px rgba(0, 191, 255, 0.2));
+  }
+  
+  &:hover {
+    .divpoint-border {
+      border-color: rgba(0, 229, 255, 0.7);
+      box-shadow: 0 0 25px rgba(0, 229, 255, 0.6);
+    }
+  }
+}
+
+.bx-popup-ctn1 {
+  min-width: 150px;
+}
+
+.bx-popup-ctn2 {
+  min-width: 200px;
+}

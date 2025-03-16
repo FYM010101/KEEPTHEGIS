@@ -8,6 +8,9 @@ onMounted(() => {
 onUnmounted(() => {
     mapStore.removeTileset('/data/tileset.json');
     mapStore.removeWallEffect('mainWall');
+    mapStore.removeAllStreamerLineEffect();
+    mapStore.removeXFC()
+    mapStore.removePopup();
 })
 </script>
 <template>

@@ -1,6 +1,7 @@
 import type { Entity, ImageryLayer, ScreenSpaceEventHandler } from 'cesium';
-import type { WallMaterialOptions, WallParams } from './wall'
-import type { CircleScanOptions, CircleScanSystem } from './cesiumEffect'
+import type { WallParams, StreamerLineParams } from './effectParams';
+import type { WallMaterialOptions, StreamerLineMaterialOptions } from './material';
+import type { CircleScanOptions, CircleScanSystem } from './cesiumEffect';
 
 export interface CesiumViewerOptions {
     terrainProvider?: any;
@@ -12,4 +13,4 @@ export type CesiumEntity = Entity;
 export type CesiumLayer = ImageryLayer;
 export type CesiumEventHandler = ScreenSpaceEventHandler;
 
-export { WallMaterialOptions, WallParams, CircleScanOptions, CircleScanSystem };
+export { StreamerLineParams, StreamerLineMaterialOptions, WallMaterialOptions, WallParams, CircleScanOptions, CircleScanSystem };

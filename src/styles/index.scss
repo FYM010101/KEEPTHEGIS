@@ -1,6 +1,22 @@
 //引入清除默认样式
 @import './reset.scss';
+//引入弹窗样式
+@import './popup.scss';
 
 .cesium-viewer-bottom {
+    display: none;
+}
+
+.cesium-performanceDisplay-defaultContainer {
+    position: absolute;
+    top: 800px;
+    right: 10px;
+    text-align: right;
+}
+
+// .cesium-viewer-bottom,
+// .cesium-viewer-animationContainer,
+// .cesium-animation-theme,
+.cesium-viewer-timelineContainer {
     display: none;
 }

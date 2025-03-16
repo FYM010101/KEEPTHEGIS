@@ -35,7 +35,7 @@ export const constantRoute = [
                 path: '/mapEffects',
                 component: () => import('@/components/EffectsScene.vue'),
                 meta: {
-                    title: '特效场景',
+                    title: '城市场景',
                     hidden: false,
                     active: false
                 },

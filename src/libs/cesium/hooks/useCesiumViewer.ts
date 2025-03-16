@@ -4,7 +4,7 @@ import * as Cesium from "cesium";
 
 // 默认的 viewer 配置选项
 const DEFAULT_VIEWER_OPTIONS: Cesium.Viewer.ConstructorOptions = {
-    timeline: false,            // 不显示时间线
+    timeline: true,            // 不显示时间线
     animation: false,           // 不显示动画控制
     geocoder: false,            // 不显示搜索按钮编码器
     homeButton: false,          // 显示初视角按钮
@@ -13,7 +13,11 @@ const DEFAULT_VIEWER_OPTIONS: Cesium.Viewer.ConstructorOptions = {
     navigationHelpButton: false, // 不显示帮助按钮
     fullscreenButton: false,    // 显示全屏按钮
     infoBox: false,             // 信息框
-    selectionIndicator: false   // 绿色的定位框
+    selectionIndicator: false,   // 绿色的定位框
+    scene3DOnly: true, //如果设置为true，则所有几何图形以3D模式绘制以节约GPU资源
+    // clock: new Cesium.Clock(), //用于控制当前时间的时钟对象
+    shouldAnimate: true, //如果为true，则时钟将自动运行
+    automaticallyTrackDataSourceClocks: true, //自动追踪最近添加的数据源的时钟设置
     // terrain: Cesium.Terrain.fromWorldTerrain(),
 };
 
@@ -39,7 +43,7 @@ export function useCesiumViewer(containerId: string): {
             viewer.value = new Cesium.Viewer(container, DEFAULT_VIEWER_OPTIONS);
 
             // 开启帧率显示
-            viewer.value.scene.debugShowFramesPerSecond = true;
+            // viewer.value.scene.debugShowFramesPerSecond = true;
 
             // 初始化地图存储
             if (!mapStore.viewer) {

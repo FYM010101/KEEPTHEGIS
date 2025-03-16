@@ -1,6 +1,6 @@
 import * as Cesium from 'cesium';
-import { useWallMaterial } from '../material/useWallMaterial';
-import type { WallParams, WallMaterialOptions } from '../../types';
+import type { WallParams, WallMaterialOptions } from '../types';
+import { MaterialManager } from '../core/MaterialManager';
 
 export interface WallEffectOptions extends WallParams {
   id: string;
@@ -10,7 +10,10 @@ export function useWallEffect() {
   const wallMap = new Map<string, Cesium.Primitive>();
 
   const createWall = (params: WallParams): Cesium.Primitive => {
-    const wallMaterial = useWallMaterial(params.materialOptions);
+    const wallMaterial = MaterialManager.instance.createMaterial({
+      type: 'wall',
+      ...params.materialOptions
+    });
     
     return new Cesium.Primitive({
       geometryInstances: new Cesium.GeometryInstance({
@@ -43,7 +46,9 @@ export function useWallEffect() {
   const updateWallMaterial = (id: string, materialOptions: WallMaterialOptions) => {
     const wall = wallMap.get(id);
     if (wall) {
-      (wall.appearance as Cesium.MaterialAppearance).material = useWallMaterial(materialOptions);
+      (wall.appearance as Cesium.MaterialAppearance).material = MaterialManager.instance.createMaterial({
+        ...materialOptions
+      });
     }
   };
 

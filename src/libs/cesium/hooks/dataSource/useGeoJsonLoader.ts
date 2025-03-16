@@ -11,13 +11,13 @@ export interface GeoJsonLoadOptions {
   markerColor?: Cesium.Color;
   markerSize?: number;
   onLoad?: (dataSource: Cesium.GeoJsonDataSource) => void;
-  onClick?: (entity: Cesium.Entity) => void; // 添加点击回调
+  // onClick?: (entity: Cesium.Entity) => void; // 添加点击回调
 }
 
 // 默认选项
 const defaultOptions: Partial<GeoJsonLoadOptions> = {
   stroke: Cesium.Color.WHITE,
-  fill: new Cesium.Color(0, 0.4, 0.5, 0.6),
+  fill: new Cesium.Color(0, 0.4, 0.5, 0.3),
   strokeWidth: 2,
   clampToGround: false
 };
@@ -80,9 +80,9 @@ export function useGeoJsonLoader() {
         mergedOptions.onLoad(dataSource);
       }
       // 如果提供了点击回调，设置点击事件
-      if (mergedOptions.onClick) {
-        setupClickHandler(viewer, dataSource, mergedOptions.onClick);
-      }
+      // if (mergedOptions.onClick) {
+      //   setupClickHandler(viewer, dataSource, mergedOptions.onClick);
+      // }
 
       return dataSource;
     } catch (error) {
@@ -90,40 +90,39 @@ export function useGeoJsonLoader() {
       return null;
     }
   };
-  /**
- * 设置点击事件处理
- * @param viewer Cesium Viewer实例
- * @param dataSource GeoJSON数据源
- * @param callback 点击回调函数
- */
-  const setupClickHandler = (
-    viewer: Cesium.Viewer,
-    dataSource: Cesium.GeoJsonDataSource,
-    callback: (entity: Cesium.Entity) => void
-  ) => {
-    // 创建事件处理器
-    const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+//   /**
+//  * 设置点击事件处理
+//  * @param viewer Cesium Viewer实例
+//  * @param dataSource GeoJSON数据源
+//  * @param callback 点击回调函数
+//  */
+//   const setupClickHandler = (
+//     viewer: Cesium.Viewer,
+//     dataSource: Cesium.GeoJsonDataSource
+//   ) => {
+//     // 创建事件处理器
+//     const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
 
-    // 设置左键点击事件
-    handler.setInputAction((movement: any) => {
-      const pickedObject = viewer.scene.pick(movement.position);
+//     // 设置左键点击事件
+//     handler.setInputAction((movement: any) => {
+//       const pickedObject = viewer.scene.pick(movement.position);
 
-      if (Cesium.defined(pickedObject) && pickedObject.id instanceof Cesium.Entity) {
-        const entity = pickedObject.id;
+//       if (Cesium.defined(pickedObject) && pickedObject.id instanceof Cesium.Entity) {
+//         const entity = pickedObject.id;
 
-        // 检查实体是否属于当前数据源
-        if (dataSource.entities.contains(entity)) {
-          callback(entity);
-        }
-      }
-    }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+//         // 检查实体是否属于当前数据源
+//         if (dataSource.entities.contains(entity)) {
+//           callback(entity);
+//         }
+//       }
+//     }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
-    // 存储事件处理器，以便后续可能的清理
-    // if (!viewer.screenSpaceEventHandlers) {
-    //   viewer.screenSpaceEventHandlers = [];
-    // }
-    // viewer.screenSpaceEventHandlers.push(handler);
-  };
+//     // 存储事件处理器，以便后续可能的清理
+//     // if (!viewer.screenSpaceEventHandlers) {
+//     //   viewer.screenSpaceEventHandlers = [];
+//     // }
+//     // viewer.screenSpaceEventHandlers.push(handler);
+//   };
 
   /**
    * 移除指定URL的GeoJSON数据
