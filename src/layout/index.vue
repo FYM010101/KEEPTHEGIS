@@ -12,6 +12,7 @@ import NavigationBar from '@/components/NavigationBar.vue'
 import LeftInfo from './leftInfo/index.vue'
 import FoldButton from '@/components/FoldButton.vue'
 import CameraInfo from '@/libs/cesium/components/CameraInfo.vue'
+import DrawingToolbar from '@/components/DrawingToolbar.vue'
 // import Compass from '@/components/Compass.vue'
 // 引入地图组件
 import MapViewer from './mapViewer/index.vue';
@@ -92,7 +93,7 @@ const closeViewPanel = () => {
             </div>
             <!-- 右侧工具栏 -->
             <div class="right_btn">
-                <!-- <div class="tool_btn"> -->
+                <DrawingToolbar />
                 <CommonButton type="text" size="large" @click="handleSubmit" class="camera-btn">
                     视角管理
                 </CommonButton>
@@ -141,6 +142,7 @@ const closeViewPanel = () => {
 .layout_container {
     width: 100%;
     height: 100vh;
+    overflow: hidden;
 
     .layout_toolbar {
         display: flex;
@@ -165,9 +167,10 @@ const closeViewPanel = () => {
 
         .right_btn {
             display: flex;
-            width: 200px;
-            justify-content: center;
+            width: auto;
+            justify-content: flex-end;
             align-items: center;
+            gap: 10px;
 
             .camera-btn {
                 color: #ffffff;
