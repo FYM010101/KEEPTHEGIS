@@ -91,6 +91,7 @@ export class Popup {
         ctn.className = "bx-popup-ctn" + (this.className ? " " + this.className : " bx-popup-ctn1");
         ctn.id = id;
         const container = document.getElementById(_this.viewer.container.id);
+        
         if (container) {
             container.appendChild(ctn);
         } else {

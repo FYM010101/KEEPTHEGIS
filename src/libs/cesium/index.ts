@@ -8,5 +8,6 @@ export * from './hooks/useStreamerLineEffect';
 export * from './hooks/useCircleScan';
 export * from './hooks/useVehicleAnimation';
 export * from './hooks/usePopup';
+export * from './hooks/useDrawing';
 export { CoordinateTransformer } from './core/CoordinateTransformer';
 export type { CesiumViewerOptions, CesiumEntity, CesiumLayer, CesiumEventHandler } from './types';
