@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useDrawing, DrawMode } from '@/libs/cesium/hooks/useDrawing';
 import useMapStore from '@/store/modules/mapStore';
 import CommonButton from './CommonButton.vue';
@@ -23,10 +23,32 @@ const currentMode = ref(DrawMode.NONE);
 const drawingTips = ref('');
 
 // 初始化绘制功能
-onMounted(() => {
-  if (mapStore.viewer) {
+const initRetries = ref(5);
+
+// 监听viewer就绪状态
+watch(() => mapStore.viewerReady, (newVal) => {
+  if (newVal && mapStore.viewer) {
+    console.log('检测到viewer就绪，初始化绘制功能');
     initDrawing(mapStore.viewer);
   }
+});
+
+// 初始化逻辑
+onMounted(() => {
+  console.log('绘制组件挂载');
+  
+  const tryInit = () => {
+    if (mapStore.viewer) {
+      console.log('初始化绘制功能', mapStore.viewer);
+      initDrawing(mapStore.viewer);
+    } else if (initRetries.value > 0) {
+      initRetries.value--;
+      setTimeout(tryInit, 500);
+    }
+  };
+  
+  // 立即尝试初始化
+  tryInit();
 });
 
 // 切换绘制模式

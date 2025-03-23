@@ -462,7 +462,7 @@ const createFilterListOption = () => {
   // 根据选择的类别筛选数据
   const filteredData = selectedCategory.value === '全部' 
     ? listData 
-    : listData.filter(item => item.category === selectedCategory.value);
+    : listData.filter((item: { category: string }) => item.category === selectedCategory.value);
 
   return {
     tooltip: {

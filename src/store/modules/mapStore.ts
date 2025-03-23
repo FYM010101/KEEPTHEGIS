@@ -66,6 +66,7 @@ interface ViewConfig {
 
 interface MapState {
   viewer: Cesium.Viewer | null;
+  viewerReady: boolean;
   viewConfigs: ViewConfig[];
   currentViewId: string | null;
   viewPanelVisible: boolean;
@@ -87,6 +88,7 @@ const useMapStore = defineStore('mapStore', {
   state: (): MapState => {
     return {
       viewer: null, // Cesium Viewer 实例
+      viewerReady: false,
       viewConfigs: [],
       currentViewId: null,
       viewPanelVisible: false,
